@@ -87,10 +87,14 @@ func (g *Game) Update() error {
 		player.x += player.speed
 	}
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		playerHeight := player.image.Bounds().Max.Y
+		playerWidth := player.image.Bounds().Max.X
+
+		// Create a new bullet
 		bullet := Bullet{
 			image: ebiten.NewImage(8, 8),
-			x:     player.x,
-			y:     player.y,
+			x:     player.x + float64(playerWidth/2),
+			y:     player.y + float64(playerHeight/2),
 			speed: 5,
 		}
 		bullet.image.Fill(color.RGBA{0, 255, 0, 255})
