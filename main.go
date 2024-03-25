@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bytes"
+	"image"
 	"image/color"
+	_ "image/png"
 	"log"
 	"math"
 	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	resources "github.com/hajimehoshi/ebiten/v2/examples/resources/images/flappy"
 )
 
 type Game struct {
@@ -38,7 +42,7 @@ type Bullet struct {
 }
 
 var player = Player{
-	image: ebiten.NewImage(16, 16),
+	image: loadImage(resources.Gopher_png),
 	x:     0,
 	y:     0,
 	speed: 5.0,
@@ -47,6 +51,14 @@ var player = Player{
 var enemies = []Enemy{}
 
 var bullets = []Bullet{}
+
+func loadImage(data []byte) *ebiten.Image {
+	img, _, err := image.Decode(bytes.NewReader(data))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return ebiten.NewImageFromImage(img)
+}
 
 func (b *Bullet) calculateDirection(targetX, targetY float64) {
 	dx := targetX - b.x
@@ -169,12 +181,8 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func main() {
 	game := &Game{}
-
-	// Player image style
-	player.image.Fill(color.White)
-
 	ebiten.SetWindowSize(1280, 720)
-	ebiten.SetWindowTitle("Hello, World!")
+	ebiten.SetWindowTitle("Ebitengine Playground")
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}
