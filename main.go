@@ -105,12 +105,12 @@ func (g *Game) Update() error {
 	// Spawn enemies at random coordinates outside the screen
 	if len(enemies) < 10 {
 		enemy := Enemy{
-			image: ebiten.NewImage(16, 16),
+			image: loadImage(resources.Tiles_png),
 			x:     float64(rand.Intn(1280)),
 			y:     float64(rand.Intn(720)),
 			speed: 2,
 		}
-		enemy.image.Fill(color.RGBA{255, 0, 0, 255})
+		enemy.image = ebiten.NewImageFromImage(enemy.image.SubImage(image.Rect(0, 0, 32, 32)).(*ebiten.Image))
 		enemies = append(enemies, enemy)
 	}
 
@@ -148,7 +148,7 @@ func (g *Game) Update() error {
 	// Check for collisions between bullets and enemies
 	for i, bullet := range bullets {
 		for j, enemy := range enemies {
-			if bullet.x > enemy.x && bullet.x < enemy.x+16 && bullet.y > enemy.y && bullet.y < enemy.y+16 {
+			if bullet.x > enemy.x && bullet.x < enemy.x+32 && bullet.y > enemy.y && bullet.y < enemy.y+32 {
 				enemies = append(enemies[:j], enemies[j+1:]...)
 				bullets = append(bullets[:i], bullets[i+1:]...)
 			}
