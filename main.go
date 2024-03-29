@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/color"
 	_ "image/png"
@@ -33,13 +34,18 @@ type Enemy struct {
 }
 
 type Bullet struct {
-	image *ebiten.Image
-	x     float64
-	y     float64
-	dx    float64
-	dy    float64
-	speed float64
+	image    *ebiten.Image
+	x        float64
+	y        float64
+	dx       float64
+	dy       float64
+	speed    float64
+	distance float64
 }
+
+var (
+	max_distance = 100.0
+)
 
 var player = Player{
 	image: loadImage(resources.Gopher_png),
@@ -70,6 +76,8 @@ func (b *Bullet) calculateDirection(targetX, targetY float64) {
 
 func (g *Game) Update() error {
 
+	ebiten.SetWindowTitle(fmt.Sprintf("Game Title | %.2ffps", ebiten.ActualFPS()))
+
 	// Get the mouse position
 	g.mouseX, g.mouseY = ebiten.CursorPosition()
 
@@ -92,10 +100,11 @@ func (g *Game) Update() error {
 
 		// Create a new bullet
 		bullet := Bullet{
-			image: ebiten.NewImage(8, 8),
-			x:     player.x + float64(playerWidth/2),
-			y:     player.y + float64(playerHeight/2),
-			speed: 5,
+			image:    ebiten.NewImage(8, 8),
+			x:        player.x + float64(playerWidth/2),
+			y:        player.y + float64(playerHeight/2),
+			speed:    5,
+			distance: 0,
 		}
 		bullet.image.Fill(color.RGBA{0, 255, 0, 255})
 		bullet.calculateDirection(float64(g.mouseX), float64(g.mouseY))
@@ -133,17 +142,20 @@ func (g *Game) Update() error {
 
 	// Move the bullets towards the mouse
 	for i, bullet := range bullets {
+		bullet.distance += bullet.speed
 		bullet.x += bullet.dx * bullet.speed
 		bullet.y += bullet.dy * bullet.speed
 		bullets[i] = bullet
 	}
 
-	// Remove bullets that are outside the screen
+	var newBullets []Bullet
+	// Remove bullets that are at max distance
 	for i, bullet := range bullets {
-		if bullet.x < 0 || bullet.x > 1280 || bullet.y < 0 || bullet.y > 720 {
-			bullets = append(bullets[:i], bullets[i+1:]...)
+		if bullet.distance <= max_distance {
+			newBullets = append(newBullets, bullets[i])
 		}
 	}
+	bullets = newBullets
 
 	// Check for collisions between bullets and enemies
 	for i, bullet := range bullets {
