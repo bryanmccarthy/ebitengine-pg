@@ -9,6 +9,7 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	resources "github.com/hajimehoshi/ebiten/v2/examples/resources/images/flappy"
@@ -20,10 +21,12 @@ type Game struct {
 }
 
 type Player struct {
-	image *ebiten.Image
-	x     float64
-	y     float64
-	speed float64
+	image         *ebiten.Image
+	x             float64
+	y             float64
+	speed         float64
+	anim_frame    int
+	anim_cooldown int
 }
 
 type Enemy struct {
@@ -47,11 +50,15 @@ var (
 	max_distance = 100.0
 )
 
+var priestFrames = []*ebiten.Image{}
+
 var player = Player{
-	image: loadImage(resources.Gopher_png),
-	x:     0,
-	y:     0,
-	speed: 5.0,
+	image:         nil,
+	x:             0,
+	y:             0,
+	speed:         5.0,
+	anim_frame:    0,
+	anim_cooldown: 0,
 }
 
 var enemies = []Enemy{}
@@ -114,7 +121,7 @@ func (g *Game) Update() error {
 	// Spawn enemies at random coordinates outside the screen
 	if len(enemies) < 10 {
 		enemy := Enemy{
-			image: loadImage(resources.Tiles_png),
+			image: loadImage(resources.Gopher_png),
 			x:     float64(rand.Intn(1280)),
 			y:     float64(rand.Intn(720)),
 			speed: 2,
@@ -167,6 +174,19 @@ func (g *Game) Update() error {
 		}
 	}
 
+	// Update the player animation
+	player.anim_cooldown++
+	if player.anim_cooldown >= 10 {
+		player.anim_frame++
+		player.anim_cooldown = 0
+	}
+
+	if player.anim_frame >= len(priestFrames) {
+		player.anim_frame = 0
+	}
+
+	player.image = priestFrames[player.anim_frame]
+
 	return nil
 }
 
@@ -196,6 +216,30 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
+
+	var filenames = []string{
+		"resources/character_animation/priests_idle/priest1/v1/priest1_v1_1.png",
+		"resources/character_animation/priests_idle/priest1/v1/priest1_v1_2.png",
+		"resources/character_animation/priests_idle/priest1/v1/priest1_v1_3.png",
+		"resources/character_animation/priests_idle/priest1/v1/priest1_v1_4.png",
+	}
+
+	for _, filename := range filenames {
+		f, err := os.Open(filename)
+		if err != nil {
+			log.Fatal(err)
+		}
+		img, _, err := image.Decode(f)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		priestFrames = append(priestFrames, ebiten.NewImageFromImage(img))
+
+	}
+
+	player.image = priestFrames[0]
+
 	game := &Game{}
 	ebiten.SetWindowSize(1280, 720)
 	ebiten.SetWindowTitle("Ebitengine Playground")
