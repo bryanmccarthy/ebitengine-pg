@@ -1,10 +1,11 @@
-package main
+package animation
 
 import (
 	"fmt"
 	_ "image/png"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	// "github.com/bryanmccarthy/animation/resources"
 )
 
 type Game struct {
