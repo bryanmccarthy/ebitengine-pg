@@ -5,7 +5,7 @@ import (
 	_ "image/png"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	// "github.com/bryanmccarthy/animation/resources"
+	// "github.com/bryanmccarthy/ebitengine-pg/animation/resources"
 )
 
 type Game struct {
